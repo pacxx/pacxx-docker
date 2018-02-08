@@ -2,78 +2,37 @@
 
 set -ex
 
-# We are in a module checked put by the ci system.  If there is an
-# argument, that is the path of the submodule inside the pacxx-llvm
-# module, that we are testing.  If there is not argument, we ar
-# testing the toplevel pacxx-llvm module itself.
+PATH=/usr/lib/ccache:$PATH
+CCACHE_DIR=/cache/ccache
+export PATH CCACHE_DIR
 
-# set up the hierarchical module structure to compile
-# https://zivgitlab.uni-muenster.de/HPC2SE-Project/pacxx-llvm.git, in
-# /ci/llvm-pacxx, but substitute the submodule (or toplevel module)
-# checked out by the CI into it.
+ccache -s
 
-# only one level of nesting is supported
+mkdir -p builds/llvm
+cd builds/llvm
+cmake /cache/pacxx-llvm                                 \
+    -DCMAKE_BUILD_TYPE=Release                          \
+    -DBUILD_SHARED_LIBS=ON                              \
+    -DLLVM_ENABLE_RTTI=ON                               \
+    -DLLVM_ENABLE_CXX1Y=ON                              \
+    -DCMAKE_BUILD_TYPE=Release                          \
+    -DCMAKE_CXX_FLAGS_RELEASE="-O3"                     \
+    -DCMAKE_INSTALL_PREFIX="${CI_PROJECT_DIR}/install"
 
-submodule=$1
+make -j"$(nproc)" install
 
-pacxx_llvm_git=https://zivgitlab.uni-muenster.de/HPC2SE-Project/pacxx-llvm.git
-pacxx_samples_git=https://github.com/pacxx/samples.git
+cd "${CI_PROJECT_DIR}"
 
-parallel=${CI_PARALLEL:-$(nproc || echo 1)}
+mkdir -p builds/barrier
+cd builds/barrier
+cmake /cache/samples/barrier                                            \
+    -DCMAKE_CXX_COMPILER="${CI_PROJECT_DIR}/install/bin/clang++"        \
+    -DCMAKE_C_COMPILER="${CI_PROJECT_DIR}/install/bin/clang"            \
+    -DCMAKE_BUILD_TYPE=Release                                          \
+    -DCMAKE_CXX_FLAGS_RELEASE="-O0 -g"                                  \
+    -DPACXX_DIR="${CI_PROJECT_DIR}/install"                             \
+    -DCMAKE_MODULE_PATH="${CI_PROJECT_DIR}/install/lib/cmake/pacxx"
 
-case $submodule in
-    "") # We are the toplevel module
-	ln -s "$(pwd)" /ci/pacxx-llvm
-	git submodule update --init
-	;;
-    *)  # We are a submodule
-	echo >&2 TODO
-	# TODO:
-	# - find the list of ancestors of this commit, sort it by the
-	#   ancestry graph, and maybe by date where the graph das not
-	#   impose an ordering
-	# - clone the toplevel repo into /ci/pacxx-llvm
-	# - find the commit in the toplevel repo that
-	#   a) contains the most recent commit of this repository,
-	#   b) if there are more than one, choose the most recent one
-	#   and check it out.
-	# - hook this repository into the toplevel repository
-	#   (symlink?, clone this repo shallowly?, clone but use this
-	#   repo as a reference?)
-	# - update the remaining submodules.
-	exit 2
-	;;
-esac
+make -j"$(nproc)"
 
-mkdir /ci/pacxx-build
-cd /ci/pacxx-build
-
-cmake /ci/pacxx-llvm				\
-    -DCMAKE_BUILD_TYPE=Release			\
-    -DBUILD_SHARED_LIBS=ON			\
-    -DLLVM_ENABLE_RTTI=ON			\
-    -DLLVM_ENABLE_CXX1Y=ON			\
-    -DCMAKE_BUILD_TYPE=Release			\
-    -DCMAKE_CXX_FLAGS_RELEASE="-O3"		\
-    -DCMAKE_INSTALL_PREFIX=/ci/pacxx-install
-
-make -j$parallel install
-
-# success, so far? build samples
-
-cd /ci
-
-git clone --depth=1 "$pacxx_samples_git" samples
-
-mkdir -p samples-build/barrier
-cd samples-build/barrier
-
-cmake /ci/samples/barrier
-    -DCMAKE_CXX_COMPILER="/ci/pacxx-install/bin/clang++"
-    -DCMAKE_C_COMPILER="/ci/pacxx-install/bin/clang"
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CXX_FLAGS_RELEASE="-O0 -g"
-    -DPACXX_DIR="/ci/pacxx-install"
-    -DCMAKE_MODULE_PATH="/ci/pacxx-install/lib/cmake/pacxx"
-
-./barrier
+LD_LIBRARY_PATH="${CI_PROJECT_DIR}/install/lib" ./barrier

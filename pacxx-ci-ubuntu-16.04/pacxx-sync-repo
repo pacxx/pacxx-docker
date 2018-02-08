@@ -1,0 +1,37 @@
+#!/bin/sh
+
+set -ex
+
+cd /cache
+if [ -d pacxx-llvm ]; then
+    cd pacxx-llvm
+    git remote set-url origin "${CI_REPOSITORY_URL}"
+    git fetch origin
+    git reset --hard HEAD
+    git clean -fdx
+else
+    git clone "${CI_REPOSITORY_URL}" pacxx-llvm
+    cd pacxx-llvm
+fi
+if [ -n "${CI_COMMIT_REF_NAME}" ]; then
+    git checkout -B "${CI_COMMIT_REF_NAME}" "${CI_COMMIT_SHA}"
+else
+    git checkout --detach "${CI_COMMIT_SHA}"
+fi
+git submodule sync
+git submodule foreach git reset --hard HEAD
+git submodule foreach git clean -fdx
+git submodule update --init
+cd ..
+
+if [ -d samples ]; then
+    cd samples
+    git remote set-url origin "https://github.com/pacxx/samples.git"
+    git fetch origin
+    git reset --hard HEAD
+    git clean -fdx
+    git checkout -B master origin/master
+else
+    git clone https://github.com/pacxx/samples.git samples
+    cd samples
+fi
