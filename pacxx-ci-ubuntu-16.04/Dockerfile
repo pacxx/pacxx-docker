@@ -22,19 +22,14 @@ RUN set -ex;                                            \
     apt-get clean;                                      \
     rm -rf /var/lib/apt/lists/*
 
-RUN set -ex;                                            \
-    for name in cc c++; do                              \
-        ln -s ../../bin/ccache /usr/lib/ccache/"$name"; \
+# Add missing ccache links for standard compiler names
+RUN set -ex;                                                            \
+    mkdir -p /usr/local/lib/ccache;                                     \
+    for name in cc c++; do                                              \
+        ln -s ../../../bin/ccache /usr/local/lib/ccache/"$name";        \
     done
 
 RUN adduser --disabled-password --home /ci --uid 50000 --gecos "" ci
 
-COPY pacxx-sync-repo pacxx-standard-test /usr/local/bin/
+COPY with-ci-ccache pacxx-sync-repo pacxx-standard-test /usr/local/bin/
 USER ci
-
-#
-
-#RUN git clone --depth=1 https://zivgitlab.uni-muenster.de/HPC2SE-Project/pacxx-llvm.git /tmp/pacxx-llvm
-#WORKDIR /tmp/pacxx-llvm
-
-#RUN pacxx-standard-test

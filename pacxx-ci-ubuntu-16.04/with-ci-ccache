@@ -1,0 +1,75 @@
+#!/bin/sh
+
+# prepend the argument, and strip it from the remaining path
+add_path()
+{
+    PATH=$(
+        # append : if set, otherwise set empty
+        path=${PATH+$PATH:}
+        newcomp=$1
+        newpath=$1:
+        IFS=:
+        for p in $path; do
+            [ x"$p" = x"$newcomp" ] || newpath=$newpath$p:
+        done
+        printf "%s" "$newpath"
+        )
+    # remove the final : here, this protects from newline-removal
+    PATH=${PATH%:}
+}
+
+export_var()
+{
+    # getopt can do the quoting for us properly -- but it will print something
+    # that has a '--' argument in front of it.  So we need to do some trickery
+    # in the to-be-evaled text to extract that without disturbing the status
+    # (i.e. the value of $@) of the shell doing the evaling
+    quoted=$(eval "getopt -o '' -- -- \"\$$1\"") || exit 2
+    cat <<EOF
+$1=\$(set %s; printf "%%s:" "\$1")
+$1=\${$1%%:}
+export $1
+EOF
+}
+
+args=$(getopt -o s -l sh -s sh -- "$@") || exit 1
+eval "set -- $args"
+
+mode=exec
+while true; do
+    case $1 in
+        -s|--sh)
+            mode=sh
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo >&2 "Erm, wut?"
+            exit 2
+            ;;
+    esac
+done
+
+add_path /usr/lib/ccache
+add_path /usr/local/lib/ccache
+export PATH
+
+CCACHE_DIR=/cache/ccache
+export CCACHE_DIR
+
+case $mode in
+    exec)
+        exec "$@"
+        ;;
+    sh)
+        if [ "${1+set}" = set ]; then
+            echo >&2 "No command may be given in --sh mode"
+            exit 2
+        fi
+        export_var PATH
+        export_var CCACHE_DIR
+        ;;
+done

@@ -2,12 +2,6 @@
 
 set -ex
 
-PATH=/usr/lib/ccache:$PATH
-CCACHE_DIR=/cache/ccache
-export PATH CCACHE_DIR
-
-ccache -s
-
 mkdir -p builds/llvm
 cd builds/llvm
 cmake /cache/pacxx-llvm                                 \
