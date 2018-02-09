@@ -72,4 +72,4 @@ case $mode in
         export_var PATH
         export_var CCACHE_DIR
         ;;
-done
+esac
