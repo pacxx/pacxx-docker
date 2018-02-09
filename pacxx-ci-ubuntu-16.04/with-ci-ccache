@@ -32,7 +32,7 @@ export $1
 EOF
 }
 
-args=$(getopt -o s -l sh -s sh -- "$@") || exit 1
+args=$(getopt -o +s -l sh -s sh -- "$@") || exit 2
 eval "set -- $args"
 
 mode=exec
