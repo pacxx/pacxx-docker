@@ -27,121 +27,13 @@
 
 set -ex
 
-# sync repo-url dir
-sync_to_master()
-{
-    if git -C "$2" remote set-url origin "$1"; then
-        git -C "$2" fetch -p origin
-        git -C "$2" reset --hard HEAD
-        git -C "$2" clean -fdx
-        git -C "$2" checkout -B master origin/master
-    else
-        rm -rf "$2"
-        mkdir -p "$2"
-        git clone "$1" "$2"
-    fi
-}
-
-parse_url()
-{
-    scheme=${1%%:*}
-    case $scheme in */*|*:*) return 1;; esac
-    path=${1#*:}
-    case $path in //*) ;; *) return 1;; esac
-    path=${path#//}
-    host=${path%%/*}
-    path=${path#"$host"}
-}
-
-concat_urls()
-{
-    if parse_url "$2"; then
-        result=$2
-        return 0
-    fi
-    parse_url "$1"
-    case $2 in
-        /*)
-            result=$scheme://$host$2
-            return 0
-            ;;
-    esac
-    # ensure there always is an artificial / at the end
-    # this makes the following easier
-    path=${path%/}/
-    rel=$2
-    while true; do
-        case $rel in
-            ..)
-                path=${path%/*/}/
-                rel=
-                ;;
-            ../*)
-                path=${path%/*/}/
-                rel=${rel#../}
-                ;;
-            ./*|/*)
-                rel=${rel#*/}
-                ;;
-            *)
-                break
-                ;;
-        esac
-    done
-    result=$scheme://$host$path$rel$suffix
-}
-
-ci_checkout()
-{
-    if [ -n "${CI_COMMIT_REF_NAME}" ]; then
-        git "$@" checkout -B "${CI_COMMIT_REF_NAME}" "${CI_COMMIT_SHA}"
-    else
-        git "$@" checkout --detach "${CI_COMMIT_SHA}"
-    fi
-}
-
-try_checkout_cmd='git checkout -B "${CI_COMMIT_REF_NAME}" origin/"${CI_COMMIT_REF_NAME}" || true'
-
-submodule=$2
-toplevel_url=$1
-if [ -n "$submodule" ]; then
-    concat_urls "$CI_REPOSITORY_URL" "$toplevel_url"
-    toplevel_url=$result
-else
-    toplevel_url=$CI_REPOSITORY_URL
-fi
+toplevel_url=$CI_REPOSITORY_URL$1
 
 cd /cache
-#sync_to_master "$toplevel_url" pacxx-llvm
 repo init -u $toplevel_url
 repo sync
-#cd pacxx-llvm
-#if [ -n "$submodule" ]; then
-#    # we're in a submodule, try to checkout branch, but stay on master if it does not work
-#    eval "$try_checkout_cmd"
-#else
-#    # we're in toplevel.  If we have a ref check that out, but put it on the provided sha
-#    ci_checkout
-#fi
-
-# sync submodules to the current state
-#git submodule sync
-#git submodule foreach git reset --hard HEAD
-#git submodule foreach git clean -fdx
-#git submodule update --init
-
-#if [ -n "$submodule" ]; then
-#    # if we have a ref, attempt to move each submodule there
-#    if [ -n "${CI_COMMIT_REF_NAME}" ]; then
-#        git submodule foreach "$try_checkout_cmd"
-#    fi
-#
-#    # sync the named submodule
-#    sync_to_master "$CI_REPOSITORY_URL" "$submodule"
-#    ci_checkout -C "$submodule"
-#fi
-#
-#cd ..
+repo start master
+repo start $CI_COMMIT_REF_NAME
 
 # sync samples
 : ${SAMPLES_GIT:=https://github.com/pacxx/samples.git}
