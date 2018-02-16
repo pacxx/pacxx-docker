@@ -77,13 +77,14 @@ concat_urls()
 }
 
 
-concat_url "$CI_REPOSITORY_URL" "$1"
+concat_urls "$CI_REPOSITORY_URL" "$1"
 toplevel_url=$result
 cd /cache
 repo init -u $toplevel_url
 repo sync
 repo start master
 repo start $CI_COMMIT_REF_NAME
+repo status 
 
 # sync samples
 : ${SAMPLES_GIT:=https://github.com/pacxx/samples.git}
