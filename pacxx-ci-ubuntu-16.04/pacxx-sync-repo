@@ -113,7 +113,7 @@ fi
 
 cd /cache
 #sync_to_master "$toplevel_url" pacxx-llvm
-repo init -u $toplevel_url/pacxx
+repo init -u $CI_REPOSITORY_URL/pacxx
 repo sync
 #cd pacxx-llvm
 #if [ -n "$submodule" ]; then
