@@ -112,35 +112,36 @@ else
 fi
 
 cd /cache
-sync_to_master "$toplevel_url" pacxx-llvm
-
-cd pacxx-llvm
-if [ -n "$submodule" ]; then
-    # we're in a submodule, try to checkout branch, but stay on master if it does not work
-    eval "$try_checkout_cmd"
-else
-    # we're in toplevel.  If we have a ref check that out, but put it on the provided sha
-    ci_checkout
-fi
+#sync_to_master "$toplevel_url" pacxx-llvm
+repo init -u $toplevel_url/pacxx
+repo sync
+#cd pacxx-llvm
+#if [ -n "$submodule" ]; then
+#    # we're in a submodule, try to checkout branch, but stay on master if it does not work
+#    eval "$try_checkout_cmd"
+#else
+#    # we're in toplevel.  If we have a ref check that out, but put it on the provided sha
+#    ci_checkout
+#fi
 
 # sync submodules to the current state
-git submodule sync
-git submodule foreach git reset --hard HEAD
-git submodule foreach git clean -fdx
-git submodule update --init
+#git submodule sync
+#git submodule foreach git reset --hard HEAD
+#git submodule foreach git clean -fdx
+#git submodule update --init
 
-if [ -n "$submodule" ]; then
-    # if we have a ref, attempt to move each submodule there
-    if [ -n "${CI_COMMIT_REF_NAME}" ]; then
-        git submodule foreach "$try_checkout_cmd"
-    fi
-
-    # sync the named submodule
-    sync_to_master "$CI_REPOSITORY_URL" "$submodule"
-    ci_checkout -C "$submodule"
-fi
-
-cd ..
+#if [ -n "$submodule" ]; then
+#    # if we have a ref, attempt to move each submodule there
+#    if [ -n "${CI_COMMIT_REF_NAME}" ]; then
+#        git submodule foreach "$try_checkout_cmd"
+#    fi
+#
+#    # sync the named submodule
+#    sync_to_master "$CI_REPOSITORY_URL" "$submodule"
+#    ci_checkout -C "$submodule"
+#fi
+#
+#cd ..
 
 # sync samples
 : ${SAMPLES_GIT:=https://github.com/pacxx/samples.git}
