@@ -11,7 +11,6 @@ RUN set -ex;                                            \
       ccache                                            \
       cmake                                             \
       git                                               \
-      repo                                              \
       libasio-dev                                       \
       libboost-dev                                      \
       libpapi-dev                                       \
