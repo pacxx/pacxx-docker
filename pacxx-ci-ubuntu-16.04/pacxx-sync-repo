@@ -79,7 +79,9 @@ concat_urls()
 
 concat_urls "$CI_REPOSITORY_URL" "$1"
 toplevel_url=$result
+
 cd /cache
+rm .repo -rf
 repo init -u $toplevel_url
 repo sync
 repo start master
@@ -87,7 +89,3 @@ repo start $CI_COMMIT_REF_NAME
 repo status 
 
 # sync samples
-: ${SAMPLES_GIT:=https://github.com/pacxx/samples.git}
-sync_to_master "${SAMPLES_GIT}" samples
-cd samples
-eval "$try_checkout_cmd"
