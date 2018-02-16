@@ -27,8 +27,58 @@
 
 set -ex
 
-toplevel_url=$CI_REPOSITORY_URL$1
+parse_url()
+{
+    scheme=${1%%:*}
+    case $scheme in */*|*:*) return 1;; esac
+    path=${1#*:}
+    case $path in //*) ;; *) return 1;; esac
+    path=${path#//}
+    host=${path%%/*}
+    path=${path#"$host"}
+}
 
+concat_urls()
+{
+    if parse_url "$2"; then
+        result=$2
+        return 0
+    fi
+    parse_url "$1"
+    case $2 in
+        /*)
+            result=$scheme://$host$2
+            return 0
+            ;;
+    esac
+    # ensure there always is an artificial / at the end
+    # this makes the following easier
+    path=${path%/}/
+    rel=$2
+    while true; do
+        case $rel in
+            ..)
+                path=${path%/*/}/
+                rel=
+                ;;
+            ../*)
+                path=${path%/*/}/
+                rel=${rel#../}
+                ;;
+            ./*|/*)
+                rel=${rel#*/}
+                ;;
+            *)
+                break
+                ;;
+        esac
+    done
+    result=$scheme://$host$path$rel$suffix
+}
+
+
+concat_url "$CI_REPOSITORY_URL" "$1"
+toplevel_url=$result
 cd /cache
 repo init -u $toplevel_url
 repo sync
