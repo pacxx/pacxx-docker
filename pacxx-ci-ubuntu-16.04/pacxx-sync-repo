@@ -102,8 +102,8 @@ ci_checkout()
 
 try_checkout_cmd='git checkout -B "${CI_COMMIT_REF_NAME}" origin/"${CI_COMMIT_REF_NAME}" || true'
 
-submodule=$1
-toplevel_url=$2
+submodule=$2
+toplevel_url=$1
 if [ -n "$submodule" ]; then
     concat_urls "$CI_REPOSITORY_URL" "$toplevel_url"
     toplevel_url=$result
@@ -113,7 +113,7 @@ fi
 
 cd /cache
 #sync_to_master "$toplevel_url" pacxx-llvm
-repo init -u $CI_REPOSITORY_URL/pacxx
+repo init -u $toplevel_url
 repo sync
 #cd pacxx-llvm
 #if [ -n "$submodule" ]; then
