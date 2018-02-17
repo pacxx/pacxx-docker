@@ -79,6 +79,8 @@ concat_urls()
 
 concat_urls "$CI_REPOSITORY_URL" "$1"
 toplevel_url=$result
+git config --global http.sslVerify false
+git config --global http.postBuffer 1048576000
 
 cd /cache
 rm .repo -rf

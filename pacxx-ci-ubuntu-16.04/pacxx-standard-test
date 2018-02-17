@@ -20,12 +20,10 @@ cd "${CI_PROJECT_DIR}"
 #mkdir -p builds/barrier
 #cd builds/barrier
 #cmake /cache/samples/barrier                                            \
-#    -DCMAKE_CXX_COMPILER="${CI_PROJECT_DIR}/install/bin/clang++"        \
-#    -DCMAKE_C_COMPILER="${CI_PROJECT_DIR}/install/bin/clang"            \
+#    -DCMAKE_CXX_COMPILER="${CI_PROJECT_DIR}/install/bin/pacxx++"        \
 #    -DCMAKE_BUILD_TYPE=Release                                          \
 #    -DCMAKE_CXX_FLAGS_RELEASE="-O0 -g"                                  \
 #    -DPACXX_DIR="${CI_PROJECT_DIR}/install"                             \
-#    -DCMAKE_MODULE_PATH="${CI_PROJECT_DIR}/install/lib/cmake/pacxx"
 
 #make -j"$(nproc)"
 
