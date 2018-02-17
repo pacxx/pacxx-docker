@@ -84,8 +84,8 @@ cd /cache
 rm .repo -rf
 repo init -u $toplevel_url
 repo sync
-repo start master
-repo start $CI_COMMIT_REF_NAME
+repo start master `repo forall -c 'echo "$REPO_PATH"'`
+repo start $CI_COMMIT_REF_NAME `repo forall -c 'echo "$REPO_PATH"'`
 repo status 
 
 # sync samples
