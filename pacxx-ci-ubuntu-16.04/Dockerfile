@@ -29,8 +29,12 @@ RUN set -ex;                                                            \
     for name in cc c++; do                                              \
         ln -s ../../../bin/ccache /usr/local/lib/ccache/"$name";        \
     done
+# Sync PACXX repo
+RUN mkdir -p /pacxx ; cd /pacxx;                            \
+    repo init -u https://github.com/pacxx/pacxx;            \
+    repo sync;                                              \
+    repo start master `repo forall -c 'echo "$REPO_PATH"'`; \
+    repo status;
 
-RUN adduser --disabled-password --home /ci --uid 50000 --gecos "" ci
-
-COPY with-ci-ccache pacxx-sync-repo pacxx-standard-test /usr/local/bin/
-USER ci
+COPY with-ci-ccache pacxx-standard-test /usr/local/bin 
+ 
