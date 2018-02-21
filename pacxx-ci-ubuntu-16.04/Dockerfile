@@ -37,5 +37,3 @@ RUN mkdir -p /pacxx ; cd /pacxx;                            \
     repo status;
 
 COPY with-ci-ccache pacxx-standard-test /usr/local/bin/ 
-
-RUN with-ci-ccache -- pacxx-standard-test 
