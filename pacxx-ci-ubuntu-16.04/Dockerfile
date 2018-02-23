@@ -53,4 +53,4 @@ RUN mkdir -p /pacxx ; cd /pacxx;                            \
     repo start master `repo forall -c 'echo "$REPO_PATH"'`; \
     repo status;
 
-COPY with-ci-ccache pacxx-standard-test /usr/local/bin/ 
+COPY with-ci-ccache pacxx-standard-test pacxx-sync-repo /usr/local/bin/ 
