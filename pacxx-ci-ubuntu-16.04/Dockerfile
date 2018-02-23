@@ -19,6 +19,11 @@ RUN set -ex;                                            \
       make                                              \
       python                                            \
       rocm-dev                                          \
+      dh-autoreconf 					\
+      libcurl4-gnutls-dev 				\
+      libexpat1-dev 					\
+      gettext libz-dev 					\ 
+      libssl-dev					\
       ;                                                 \
     apt-get clean;                                      \
     rm -rf /var/lib/apt/lists/*
@@ -39,7 +44,7 @@ RUN git clone https://github.com/git/git; 	\
     apt-get remove git;				\
     make install;				\
     cd .. ;					\
-    rm -rf ./git				\
+    rm -rf ./git				
 
 # Sync PACXX repo
 RUN mkdir -p /pacxx ; cd /pacxx;                            \
