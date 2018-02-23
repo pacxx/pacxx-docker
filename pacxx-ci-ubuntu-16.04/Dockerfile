@@ -20,7 +20,7 @@ RUN set -ex;                                            \
       python                                            \
       rocm-dev                                          \
       dh-autoreconf 					\
-      libcurl4-gnutls-dev 				\
+      libcurl4-openssl-dev 				\
       libexpat1-dev 					\
       gettext libz-dev 					\ 
       libssl-dev					\
