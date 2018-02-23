@@ -29,6 +29,18 @@ RUN set -ex;                                                            \
     for name in cc c++; do                                              \
         ln -s ../../../bin/ccache /usr/local/lib/ccache/"$name";        \
     done
+
+# Build git with OpenSSL support
+RUN git clone https://github.com/git/git; 	\
+    cd git; 					\
+    make configure;				\
+    ./configure --with-openssl;			\
+    make;					\
+    apt-get remove git;				\
+    make install;				\
+    cd .. ;					\
+    rm -rf ./git				\
+
 # Sync PACXX repo
 RUN mkdir -p /pacxx ; cd /pacxx;                            \
     repo init -u https://github.com/pacxx/pacxx;            \
