@@ -19,11 +19,13 @@ RUN set -ex;                                            \
       make                                              \
       python                                            \
       rocm-dev                                          \
-      dh-autoreconf 					\
-      libcurl4-openssl-dev 				\
-      libexpat1-dev 					\
-      gettext libz-dev 					\ 
-      libssl-dev					\
+      texlive-full                                      \
+      latexmk                                           \
+      dh-autoreconf 					                \
+      libcurl4-openssl-dev 				                \
+      libexpat1-dev 					                \
+      gettext libz-dev 					                \ 
+      libssl-dev					                    \
       ;                                                 \
     apt-get clean;                                      \
     rm -rf /var/lib/apt/lists/*
@@ -37,13 +39,13 @@ RUN set -ex;                                                            \
 
 # Build git with OpenSSL support
 RUN git clone https://github.com/git/git; 	\
-    cd git; 					\
-    make configure;				\
-    ./configure --with-openssl;			\
-    make;					\
-    apt-get remove git;				\
-    make install;				\
-    cd .. ;					\
+    cd git; 					            \
+    make configure;				            \
+    ./configure --with-openssl;	    		\
+    make;				                	\
+    apt-get remove git;	        			\
+    make install;		            		\
+    cd .. ;				                	\
     rm -rf ./git				
 
 # Sync PACXX repo
